@@ -9,12 +9,14 @@ from pathlib import Path
 
 from .analysis import analyze_profile
 from .ingestion import IngestionError, parse_profile_text
+from .rewrite import rewrite_profile
 from .schema import validate_profile
 from .storage import (
     create_sample_profile,
     init_workspace,
     read_profile,
     write_analysis_report,
+    write_rewrite_artifact,
     write_profile,
 )
 
@@ -91,6 +93,35 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_rewrite(args: argparse.Namespace) -> int:
+    profile_path = Path(args.path)
+
+    try:
+        profile = read_profile(profile_path)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Profile rewrite failed: {exc}")
+        return 1
+
+    errors = validate_profile(profile)
+    if errors:
+        print("Profile rewrite failed validation:")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+
+    artifact = rewrite_profile(profile, args.lens, str(profile_path))
+    workspace = init_workspace(Path(args.workspace))
+    artifact_name = f"{profile_path.stem}-{args.lens}"
+    target = write_rewrite_artifact(artifact_name, artifact, base_dir=workspace)
+
+    print(f"Rewrite artifact saved to: {target}")
+    print(f"Lens: {artifact['lens_label']}")
+    print("Variants:")
+    for variant in artifact["variants"]:
+        print(f"- {variant['label']}")
+    return 0
+
+
 def _read_ingest_source(input_path: str | None) -> str:
     if input_path:
         return Path(input_path).read_text(encoding="utf-8")
@@ -127,6 +158,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     analyze_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
     analyze_cmd.set_defaults(func=cmd_analyze)
+
+    rewrite_cmd = subparsers.add_parser("rewrite", help="Rewrite a profile JSON document")
+    rewrite_cmd.add_argument("path", help="Path to profile JSON file")
+    rewrite_cmd.add_argument(
+        "--lens",
+        choices=("ai", "transformation", "consulting"),
+        required=True,
+        help="Positioning lens to rewrite for",
+    )
+    rewrite_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    rewrite_cmd.set_defaults(func=cmd_rewrite)
 
     ingest_cmd = subparsers.add_parser("ingest", help="Ingest profile content into schema v1")
     ingest_cmd.add_argument(

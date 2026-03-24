@@ -8,12 +8,13 @@ Translate the PRD into a current, dependency-based delivery sequence for a solo 
 - Implemented code:
   - schema definition and validation helpers
   - local filesystem storage helpers
-  - CLI commands: `init`, `ingest`, `analyze`, `validate`
-  - schema, ingestion, and analysis tests
+  - CLI commands: `init`, `ingest`, `analyze`, `rewrite`, `validate`
+  - schema, ingestion, analysis, and rewrite tests
 - Verified commands in the current shell:
   - `python3 --version` works
   - `python3 -m lps.cli --help` works
   - `python3 -m lps.cli ingest --format markdown --input tests/fixtures/sample_profile.md` works after dev setup
+  - `python3 -m lps.cli rewrite /tmp/lps-ingest-check/profiles/markdown-check.json --lens ai --workspace /tmp/lps-rewrite-check` works
   - `/tmp/lps-venv/bin/python -m pytest -q` passes
 - Dev setup baseline:
   - `pyproject.toml` declares `pytest` in the `dev` extra
@@ -138,6 +139,11 @@ Exit criteria:
 - the user can compare multiple credible variants without losing source fidelity
 - the rewrite flow is usable across all three MVP positioning lenses
 
+Current status:
+- implemented with the `rewrite` CLI command
+- covered by rewrite tests and CLI verification
+- the next work begins at Phase 4 versioning and diff
+
 Risks to manage:
 - embellished claims or unsupported metrics
 - different lenses collapsing into the same generic language
@@ -199,16 +205,16 @@ Risks to manage:
 - Treat factual accuracy as a release gate for rewrite-related work.
 
 ## Immediate Next Tickets
-1. Define rewrite artifact and metadata structure before generating variants.
-2. Implement the first rewrite workflow for headline, about, and experience sections.
-3. Add CLI wiring for `rewrite`.
-4. Add a factuality checklist output for rewrite review.
-5. Add rewrite tests across AI, transformation, and consulting lenses.
-6. Define stable version identifiers before version storage begins.
-7. Implement version listing and retrieval conventions.
-8. Implement diff output that supports profile review decisions.
-9. Document the analysis-to-rewrite handoff contract now that the analysis artifact shape exists.
-10. Decide whether rewrite artifacts should save both JSON structure and Markdown review views.
+1. Define stable version identifiers before version storage begins.
+2. Implement version listing and retrieval conventions.
+3. Implement diff output that supports profile review decisions.
+4. Add CLI wiring for `versions` and `diff`.
+5. Decide whether saved versions should snapshot both source profiles and rewrite variants.
+6. Document the rewrite-to-versioning handoff contract now that rewrite artifacts exist.
+7. Define content generation inputs from a selected saved version.
+8. Implement the first content idea generator.
+9. Add content artifact storage conventions under `.lps/content/`.
+10. Decide whether content generation should read directly from rewrite artifacts or a normalized version store.
 
 ## MVP Completion Definition
 The MVP is complete when one user can:

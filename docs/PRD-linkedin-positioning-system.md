@@ -7,10 +7,11 @@
 Define the current product reality, the target MVP, and the defaults that guide implementation from the current Phase 0 scaffold to a usable local-first workflow.
 
 ## Current State (Implemented as of 2026-03-24)
-- The repo is a local Python CLI project with the `lps` package and four working commands:
+- The repo is a local Python CLI project with the `lps` package and five working commands:
   - `python3 -m lps.cli init`
   - `python3 -m lps.cli ingest --format <markdown|paste> --input <path>`
   - `python3 -m lps.cli analyze <path> --lens <ai|transformation|consulting>`
+  - `python3 -m lps.cli rewrite <path> --lens <ai|transformation|consulting>`
   - `python3 -m lps.cli validate <path>`
 - Phase 0 is complete:
   - local workspace initialization exists
@@ -24,9 +25,13 @@ Define the current product reality, the target MVP, and the defaults that guide 
   - heuristic scoring across clarity, authority, AI signal, leadership signal, and lens fit
   - selected-lens gap analysis for AI, transformation, and consulting positioning
   - saved JSON analysis artifacts under `.lps/analysis/`
-- The current workspace baseline is `.lps/profiles/` and `.lps/analysis/`.
+- Phase 3 rewrite is implemented for:
+  - two deterministic variants per selected lens
+  - conservative rewrites for headline, about, and experience entries
+  - factuality checklist output and saved JSON artifacts under `.lps/rewrites/`
+- The current workspace baseline is `.lps/profiles/`, `.lps/analysis/`, and `.lps/rewrites/`.
 - The current product is CLI-only. There is no web UI, remote service, or LinkedIn integration.
-- Rewrite, versioning, diff, and content generation are planned but not yet implemented.
+- Versioning, diff, and content generation are planned but not yet implemented.
 
 ## Problem Statement
 The current LinkedIn profile under-represents actual seniority, scope, and differentiated value. The user needs a repeatable system for evaluating, rewriting, versioning, and extending that profile narrative into posts and outreach without depending on brittle LinkedIn automation.
@@ -101,13 +106,14 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
 - `python3 -m lps.cli analyze <path> --lens <ai|transformation|consulting> [--workspace .lps]`
   - analyzes a validated profile against one positioning lens
   - writes the resulting report JSON to `.lps/analysis/`
+- `python3 -m lps.cli rewrite <path> --lens <ai|transformation|consulting> [--workspace .lps]`
+  - creates two conservative profile variants for one positioning lens
+  - writes the resulting artifact JSON to `.lps/rewrites/`
 - `python3 -m lps.cli validate <path>`
   - reads a profile JSON document
   - validates it against schema v1
 
 ### Planned CLI Surface (Not Yet Implemented)
-- `python3 -m lps.cli rewrite`
-  - generate role-lens profile variants from a validated profile
 - `python3 -m lps.cli versions`
   - list and inspect saved versions with metadata
 - `python3 -m lps.cli diff`
@@ -119,8 +125,8 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
 - Current:
   - `.lps/profiles/`
   - `.lps/analysis/`
-- Planned additions:
   - `.lps/rewrites/`
+- Planned additions:
   - `.lps/versions/`
   - `.lps/content/`
 
@@ -158,6 +164,7 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
 - A single run produces at least 2 credible profile variants.
 - Rewrites cover headline, about, and experience entries.
 - Variants remain factually grounded and include a review checklist before adoption.
+- The current implementation writes a saved rewrite artifact under `.lps/rewrites/`.
 
 ### Versioning
 - The user can save, list, open, and diff any two versions.
