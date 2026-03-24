@@ -63,6 +63,10 @@
   - versioning and diff CLI coverage
 - `tests/test_content.py`
   - content bundle and CLI coverage
+- `tests/test_pipeline_smoke.py`
+  - full pipeline smoke coverage in one workspace
+- `docs/LPS-architecture-overview.md`
+  - end-to-end architecture and artifact flow
 - `README.md`
   - dev setup
   - quickstart for Phase 0 through Phase 5 commands
@@ -80,16 +84,16 @@
 | Test/dev setup | Complete for repo baseline | `dev` extra includes pytest, README documents venv workflow | optional lockfile or stricter tooling later | use the documented setup for all verification |
 
 ## Ordered Next Tickets
-1. Add a short architecture note covering the full end-to-end pipeline.
-2. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
-3. Evaluate whether deterministic generation is sufficient for rewrite and content quality or whether a model-backed path is justified later.
-4. Add smoke tests for the full pipeline in one workspace.
-5. Define release criteria for a v0.1 tag now that the MVP path is implemented.
-6. Tighten rewrite language so the three lenses feel more differentiated.
-7. Tighten content drafts so they sound less template-driven.
-8. Add export helpers for publishing profile variants and content bundles.
-9. Add performance tracking across saved versions and generated content.
-10. Define backward compatibility rules for saved artifacts before wider iteration.
+1. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
+2. Evaluate whether deterministic generation is sufficient for rewrite and content quality or whether a model-backed path is justified later.
+3. Define release criteria for a v0.1 tag now that the MVP path is implemented.
+4. Tighten rewrite language so the three lenses feel more differentiated.
+5. Tighten content drafts so they sound less template-driven.
+6. Add export helpers for publishing profile variants and content bundles.
+7. Add performance tracking across saved versions and generated content.
+8. Define backward compatibility rules for saved artifacts before wider iteration.
+9. Add richer smoke coverage for multiple lenses rather than AI only.
+10. Decide whether artifact schemas should be versioned more explicitly before external consumers appear.
 
 ## Active Blockers and Risks
 - Version metadata now exists, so future changes should preserve backward readability for saved version records.
