@@ -13,7 +13,7 @@
   - Phase 2 complete
   - Phase 3 complete
   - Phase 4 complete
-  - Phase 5 not yet implemented
+  - Phase 5 complete
 
 ## Implemented Inventory
 - `lps/schema.py`
@@ -29,6 +29,7 @@
   - `rewrite`
   - `versions`
   - `diff`
+  - `content`
   - `validate`
 - `lps/ingestion.py`
   - Markdown ingestion parser
@@ -46,6 +47,10 @@
   - saved version record generation
   - version listing and lookup
   - unified diff rendering
+- `lps/content.py`
+  - deterministic content idea generation
+  - post draft generation
+  - outreach draft generation
 - `tests/test_schema.py`
   - baseline validation coverage for valid and invalid profiles
 - `tests/test_ingestion.py`
@@ -56,9 +61,11 @@
   - rewrite engine and CLI coverage
 - `tests/test_versioning.py`
   - versioning and diff CLI coverage
+- `tests/test_content.py`
+  - content bundle and CLI coverage
 - `README.md`
   - dev setup
-  - quickstart for Phase 0 through Phase 4 commands
+  - quickstart for Phase 0 through Phase 5 commands
 
 ## Gap to MVP
 
@@ -69,26 +76,26 @@
 | Analysis | Complete for MVP baseline | rubric, report format, CLI command, tests | tuning and polish only | move to rewrite work |
 | Rewrite | Complete for MVP baseline | lens templates, factuality checklist, saved artifacts, CLI command, tests | quality tuning only | move to versioning work |
 | Versioning + diff | Complete for MVP baseline | version store, list/show, diff command, artifact layout, tests | polish only | move to content work |
-| Content generation | Not started | no content pipeline | ideas, drafts, outreach, CLI command, saved outputs | start only after version selection is usable |
+| Content generation | Complete for MVP baseline | ideas, drafts, outreach, CLI command, saved outputs, tests | polish only | move to quality and release work |
 | Test/dev setup | Complete for repo baseline | `dev` extra includes pytest, README documents venv workflow | optional lockfile or stricter tooling later | use the documented setup for all verification |
 
 ## Ordered Next Tickets
-1. Define content generation inputs from a selected saved version.
-2. Implement the first content idea generator.
-3. Add the `content` CLI command.
-4. Generate at least 10 ideas, 3 post drafts, and 3 outreach drafts per run.
-5. Add content artifact storage conventions under `.lps/content/`.
-6. Add content tests across AI, transformation, and consulting lenses.
-7. Decide whether content generation should read directly from rewrite artifacts or the normalized version store.
-8. Add a short architecture note covering the end-to-end pipeline now that versioning exists.
-9. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
-10. Evaluate whether deterministic generation is sufficient for content or whether a model-backed path is justified later.
+1. Add a short architecture note covering the full end-to-end pipeline.
+2. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
+3. Evaluate whether deterministic generation is sufficient for rewrite and content quality or whether a model-backed path is justified later.
+4. Add smoke tests for the full pipeline in one workspace.
+5. Define release criteria for a v0.1 tag now that the MVP path is implemented.
+6. Tighten rewrite language so the three lenses feel more differentiated.
+7. Tighten content drafts so they sound less template-driven.
+8. Add export helpers for publishing profile variants and content bundles.
+9. Add performance tracking across saved versions and generated content.
+10. Define backward compatibility rules for saved artifacts before wider iteration.
 
 ## Active Blockers and Risks
 - Version metadata now exists, so future changes should preserve backward readability for saved version records.
 - Multi-lens support is a product requirement in MVP, so analysis and rewrite abstractions should not hard-code a single lens.
 - Rewrite quality is currently deterministic and conservative. Higher-quality generation may later need a model-backed path, but the factuality bar should stay unchanged.
-- Content generation remains the largest missing area for MVP because it needs to reuse versioned narrative without drifting into generic output.
+- Content generation is implemented, but it is still deterministic and may need quality tuning to avoid generic outputs.
 
 ## Decision Log
 - 2026-03-24: Phase 0 is treated as complete and future delivery starts at ingestion/parsing.
@@ -100,6 +107,7 @@
 - 2026-03-24: Phase 2 analysis is implemented with heuristic scoring, saved JSON reports, and selected-lens gap analysis.
 - 2026-03-24: Phase 3 rewrite is implemented with deterministic variants and factuality checklist artifacts.
 - 2026-03-24: Phase 4 versioning is implemented with saved snapshots and unified diffs over versioned profiles.
+- 2026-03-24: Phase 5 content generation is implemented from saved versions with ideas, post drafts, and outreach drafts.
 
 ## Near-Term Acceptance Checks
 - Every current command named in the docs exists today:
@@ -111,13 +119,14 @@
   - `python3 -m lps.cli versions list`
   - `python3 -m lps.cli versions show <version-id>`
   - `python3 -m lps.cli diff <version-a> <version-b>`
+  - `python3 -m lps.cli content <version-id>`
   - `python3 -m lps.cli validate <path>`
   - `python3 -m lps.cli --help`
-- Every planned command named in the docs is clearly labeled as planned:
-  - `content`
+- Every current MVP command named in the docs exists today.
 - Phase 0 is documented as complete across the planning set.
 - Phase 1 is documented as complete across the planning set.
 - Phase 2 is documented as complete across the planning set.
 - Phase 3 is documented as complete across the planning set.
 - Phase 4 is documented as complete across the planning set.
-- Active implementation starts at Phase 5 content generation.
+- Phase 5 is documented as complete across the planning set.
+- The MVP baseline is implemented end to end.

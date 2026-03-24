@@ -8,14 +8,15 @@ Translate the PRD into a current, dependency-based delivery sequence for a solo 
 - Implemented code:
   - schema definition and validation helpers
   - local filesystem storage helpers
-  - CLI commands: `init`, `ingest`, `analyze`, `rewrite`, `versions`, `diff`, `validate`
-  - schema, ingestion, analysis, rewrite, and versioning tests
+  - CLI commands: `init`, `ingest`, `analyze`, `rewrite`, `versions`, `diff`, `content`, `validate`
+  - schema, ingestion, analysis, rewrite, versioning, and content tests
 - Verified commands in the current shell:
   - `python3 --version` works
   - `python3 -m lps.cli --help` works
   - `python3 -m lps.cli ingest --format markdown --input tests/fixtures/sample_profile.md` works after dev setup
   - `python3 -m lps.cli rewrite /tmp/lps-ingest-check/profiles/markdown-check.json --lens ai --workspace /tmp/lps-rewrite-check` works
   - `python3 -m lps.cli versions save /tmp/lps-rewrite-check/rewrites/markdown-check-ai.json --variant-id ai-core --workspace /tmp/lps-version-check` works
+  - `python3 -m lps.cli content 20260324T195305308397Z-ai-ai-core --workspace /tmp/lps-version-check` works
   - `/tmp/lps-venv/bin/python -m pytest -q` passes
 - Dev setup baseline:
   - `pyproject.toml` declares `pytest` in the `dev` extra
@@ -198,6 +199,11 @@ Exit criteria:
 - a run produces at least 10 post ideas, 3 post drafts, and 3 outreach drafts
 - generated content stays aligned with the chosen profile narrative
 
+Current status:
+- implemented with the `content` CLI command
+- covered by content tests and CLI verification
+- the MVP pipeline is now complete
+
 Risks to manage:
 - narrative drift between profile and generated content
 - repetitive outputs across formats
@@ -211,16 +217,19 @@ Risks to manage:
 - Treat factual accuracy as a release gate for rewrite-related work.
 
 ## Immediate Next Tickets
-1. Define content generation inputs from a selected saved version.
-2. Implement the first content idea generator.
-3. Add content artifact storage conventions under `.lps/content/`.
-4. Add CLI wiring for `content`.
-5. Generate at least 10 ideas, 3 post drafts, and 3 outreach drafts per run.
-6. Decide whether content generation should read directly from rewrite artifacts or the normalized version store.
-7. Add content tests across AI, transformation, and consulting lenses.
-8. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
-9. Add a short architecture note covering the full profile -> analysis -> rewrite -> version -> content flow.
-10. Evaluate whether deterministic generation is sufficient for content or whether a model-backed path is justified later.
+1. Add a short architecture note covering the full profile -> analysis -> rewrite -> version -> content flow.
+2. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
+3. Evaluate whether deterministic generation is sufficient for rewrite and content quality or whether a model-backed path is justified later.
+4. Tighten rewrite and content quality with more differentiated lens-specific language.
+5. Add smoke tests for the full end-to-end pipeline in one workspace.
+6. Define release criteria for a v0.1 tag now that the MVP path is implemented.
+7. Decide whether to add a lightweight local review UI.
+8. Add export helpers for publishing profile variants and content drafts.
+9. Add performance tracking across saved versions and generated content.
+10. Harden backward compatibility rules for saved artifacts before wider iteration.
+
+## MVP Completion Status
+The MVP definition is now satisfied in the local CLI workflow.
 
 ## MVP Completion Definition
 The MVP is complete when one user can:

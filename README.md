@@ -23,6 +23,7 @@ python3 -m venv .venv
 .venv/bin/python -m lps.cli analyze .lps/profiles/sample.json --lens ai
 .venv/bin/python -m lps.cli rewrite .lps/profiles/sample.json --lens ai
 .venv/bin/python -m lps.cli versions save .lps/rewrites/sample-ai.json --variant-id ai-core
+.venv/bin/python -m lps.cli content <version-id>
 .venv/bin/python -m lps.cli validate .lps/profiles/sample.json
 ```
 
@@ -39,6 +40,9 @@ The `rewrite` command creates two conservative variants for the selected lens an
 
 ## Versioning
 Use `versions save` to snapshot a rewrite variant into `.lps/versions/`, `versions list` to inspect saved snapshots, and `diff` to compare any two saved version IDs.
+
+## Content
+The `content` command reads a saved version and writes a bundle under `.lps/content/` with 10 ideas, 3 short post drafts, and 3 outreach drafts.
 
 ## Ingestion formats
 

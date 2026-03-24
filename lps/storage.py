@@ -14,6 +14,7 @@ PROFILE_DIR = "profiles"
 ANALYSIS_DIR = "analysis"
 REWRITE_DIR = "rewrites"
 VERSION_DIR = "versions"
+CONTENT_DIR = "content"
 
 
 def init_workspace(base_dir: Path = DEFAULT_WORKSPACE) -> Path:
@@ -22,6 +23,7 @@ def init_workspace(base_dir: Path = DEFAULT_WORKSPACE) -> Path:
     (base_dir / ANALYSIS_DIR).mkdir(parents=True, exist_ok=True)
     (base_dir / REWRITE_DIR).mkdir(parents=True, exist_ok=True)
     (base_dir / VERSION_DIR).mkdir(parents=True, exist_ok=True)
+    (base_dir / CONTENT_DIR).mkdir(parents=True, exist_ok=True)
     return base_dir
 
 
@@ -66,6 +68,18 @@ def write_version_record(
     init_workspace(base_dir)
     target = base_dir / VERSION_DIR / f"{version_id}.json"
     target.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def write_content_artifact(
+    artifact_name: str,
+    artifact: dict[str, Any],
+    base_dir: Path = DEFAULT_WORKSPACE,
+) -> Path:
+    """Write a content artifact JSON document to the workspace."""
+    init_workspace(base_dir)
+    target = base_dir / CONTENT_DIR / f"{artifact_name}.json"
+    target.write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
     return target
 
 

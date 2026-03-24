@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from .analysis import analyze_profile
+from .content import generate_content_bundle
 from .ingestion import IngestionError, parse_profile_text
 from .rewrite import rewrite_profile
 from .schema import validate_profile
@@ -16,6 +17,7 @@ from .storage import (
     init_workspace,
     read_profile,
     write_analysis_report,
+    write_content_artifact,
     write_rewrite_artifact,
     write_version_record,
     write_profile,
@@ -179,6 +181,25 @@ def cmd_diff(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_content(args: argparse.Namespace) -> int:
+    workspace = Path(args.workspace)
+
+    try:
+        version_record = read_version_record(workspace, args.version_id)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Content generation failed: {exc}")
+        return 1
+
+    artifact = generate_content_bundle(version_record)
+    target = write_content_artifact(args.version_id, artifact, base_dir=workspace)
+
+    print(f"Content artifact saved to: {target}")
+    print(f"Ideas: {len(artifact['ideas'])}")
+    print(f"Post drafts: {len(artifact['post_drafts'])}")
+    print(f"Outreach drafts: {len(artifact['outreach_drafts'])}")
+    return 0
+
+
 def _read_ingest_source(input_path: str | None) -> str:
     if input_path:
         return Path(input_path).read_text(encoding="utf-8")
@@ -250,6 +271,11 @@ def build_parser() -> argparse.ArgumentParser:
     diff_cmd.add_argument("version_b", help="Second saved version identifier")
     diff_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
     diff_cmd.set_defaults(func=cmd_diff)
+
+    content_cmd = subparsers.add_parser("content", help="Generate content from a saved version")
+    content_cmd.add_argument("version_id", help="Saved version identifier")
+    content_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    content_cmd.set_defaults(func=cmd_content)
 
     ingest_cmd = subparsers.add_parser("ingest", help="Ingest profile content into schema v1")
     ingest_cmd.add_argument(
