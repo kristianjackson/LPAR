@@ -7,11 +7,15 @@
 Define the current product reality, the target MVP, and the defaults that guide implementation from the current Phase 0 scaffold to a usable local-first workflow.
 
 ## Current State (Implemented as of 2026-03-24)
-- The repo is a local Python CLI project with the `lps` package and five working commands:
+- The repo is a local Python CLI project with the `lps` package and nine working commands:
   - `python3 -m lps.cli init`
   - `python3 -m lps.cli ingest --format <markdown|paste> --input <path>`
   - `python3 -m lps.cli analyze <path> --lens <ai|transformation|consulting>`
   - `python3 -m lps.cli rewrite <path> --lens <ai|transformation|consulting>`
+  - `python3 -m lps.cli versions save <rewrite-path> --variant-id <id>`
+  - `python3 -m lps.cli versions list`
+  - `python3 -m lps.cli versions show <version-id>`
+  - `python3 -m lps.cli diff <version-a> <version-b>`
   - `python3 -m lps.cli validate <path>`
 - Phase 0 is complete:
   - local workspace initialization exists
@@ -29,9 +33,13 @@ Define the current product reality, the target MVP, and the defaults that guide 
   - two deterministic variants per selected lens
   - conservative rewrites for headline, about, and experience entries
   - factuality checklist output and saved JSON artifacts under `.lps/rewrites/`
-- The current workspace baseline is `.lps/profiles/`, `.lps/analysis/`, and `.lps/rewrites/`.
+- Phase 4 versioning is implemented for:
+  - saved version snapshots from rewrite artifacts
+  - version listing and inspection
+  - diff output between any two saved versions
+- The current workspace baseline is `.lps/profiles/`, `.lps/analysis/`, `.lps/rewrites/`, and `.lps/versions/`.
 - The current product is CLI-only. There is no web UI, remote service, or LinkedIn integration.
-- Versioning, diff, and content generation are planned but not yet implemented.
+- Content generation is planned but not yet implemented.
 
 ## Problem Statement
 The current LinkedIn profile under-represents actual seniority, scope, and differentiated value. The user needs a repeatable system for evaluating, rewriting, versioning, and extending that profile narrative into posts and outreach without depending on brittle LinkedIn automation.
@@ -109,15 +117,20 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
 - `python3 -m lps.cli rewrite <path> --lens <ai|transformation|consulting> [--workspace .lps]`
   - creates two conservative profile variants for one positioning lens
   - writes the resulting artifact JSON to `.lps/rewrites/`
+- `python3 -m lps.cli versions save <rewrite-path> --variant-id <id> [--workspace .lps]`
+  - saves one rewrite variant as a named version snapshot
+  - writes the resulting version JSON to `.lps/versions/`
+- `python3 -m lps.cli versions list [--workspace .lps]`
+  - lists saved versions
+- `python3 -m lps.cli versions show <version-id> [--workspace .lps]`
+  - prints a saved version record
+- `python3 -m lps.cli diff <version-a> <version-b> [--workspace .lps]`
+  - renders a unified diff between two saved versions
 - `python3 -m lps.cli validate <path>`
   - reads a profile JSON document
   - validates it against schema v1
 
 ### Planned CLI Surface (Not Yet Implemented)
-- `python3 -m lps.cli versions`
-  - list and inspect saved versions with metadata
-- `python3 -m lps.cli diff`
-  - compare two saved versions
 - `python3 -m lps.cli content`
   - generate post ideas, post drafts, and outreach drafts from a selected version
 
@@ -126,8 +139,8 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
   - `.lps/profiles/`
   - `.lps/analysis/`
   - `.lps/rewrites/`
-- Planned additions:
   - `.lps/versions/`
+- Planned additions:
   - `.lps/content/`
 
 ## Functional Requirements
@@ -169,6 +182,7 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
 ### Versioning
 - The user can save, list, open, and diff any two versions.
 - Saved metadata is sufficient to understand how a version was produced.
+- The current implementation saves version artifacts under `.lps/versions/`.
 
 ### Content Generation
 - A single run produces at least:

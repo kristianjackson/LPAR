@@ -8,13 +8,14 @@ Translate the PRD into a current, dependency-based delivery sequence for a solo 
 - Implemented code:
   - schema definition and validation helpers
   - local filesystem storage helpers
-  - CLI commands: `init`, `ingest`, `analyze`, `rewrite`, `validate`
-  - schema, ingestion, analysis, and rewrite tests
+  - CLI commands: `init`, `ingest`, `analyze`, `rewrite`, `versions`, `diff`, `validate`
+  - schema, ingestion, analysis, rewrite, and versioning tests
 - Verified commands in the current shell:
   - `python3 --version` works
   - `python3 -m lps.cli --help` works
   - `python3 -m lps.cli ingest --format markdown --input tests/fixtures/sample_profile.md` works after dev setup
   - `python3 -m lps.cli rewrite /tmp/lps-ingest-check/profiles/markdown-check.json --lens ai --workspace /tmp/lps-rewrite-check` works
+  - `python3 -m lps.cli versions save /tmp/lps-rewrite-check/rewrites/markdown-check-ai.json --variant-id ai-core --workspace /tmp/lps-version-check` works
   - `/tmp/lps-venv/bin/python -m pytest -q` passes
 - Dev setup baseline:
   - `pyproject.toml` declares `pytest` in the `dev` extra
@@ -168,6 +169,11 @@ Exit criteria:
 - user can reliably save and compare any two variants
 - version records are inspectable without bespoke tooling
 
+Current status:
+- implemented with the `versions` and `diff` CLI commands
+- covered by versioning tests and CLI verification
+- the next work begins at Phase 5 content generation
+
 Risks to manage:
 - metadata shape becoming inconsistent across commands
 - diffs that are technically accurate but not useful for narrative review
@@ -205,16 +211,16 @@ Risks to manage:
 - Treat factual accuracy as a release gate for rewrite-related work.
 
 ## Immediate Next Tickets
-1. Define stable version identifiers before version storage begins.
-2. Implement version listing and retrieval conventions.
-3. Implement diff output that supports profile review decisions.
-4. Add CLI wiring for `versions` and `diff`.
-5. Decide whether saved versions should snapshot both source profiles and rewrite variants.
-6. Document the rewrite-to-versioning handoff contract now that rewrite artifacts exist.
-7. Define content generation inputs from a selected saved version.
-8. Implement the first content idea generator.
-9. Add content artifact storage conventions under `.lps/content/`.
-10. Decide whether content generation should read directly from rewrite artifacts or a normalized version store.
+1. Define content generation inputs from a selected saved version.
+2. Implement the first content idea generator.
+3. Add content artifact storage conventions under `.lps/content/`.
+4. Add CLI wiring for `content`.
+5. Generate at least 10 ideas, 3 post drafts, and 3 outreach drafts per run.
+6. Decide whether content generation should read directly from rewrite artifacts or the normalized version store.
+7. Add content tests across AI, transformation, and consulting lenses.
+8. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
+9. Add a short architecture note covering the full profile -> analysis -> rewrite -> version -> content flow.
+10. Evaluate whether deterministic generation is sufficient for content or whether a model-backed path is justified later.
 
 ## MVP Completion Definition
 The MVP is complete when one user can:

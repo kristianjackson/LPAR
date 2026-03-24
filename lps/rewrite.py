@@ -136,7 +136,7 @@ def _append_headline_suffix(source_headline: str, suffix: str) -> str:
 
 
 def _build_about_variant(source_about: str, opener: str, role_summaries: list[str]) -> str:
-    evidence = "Recent examples include " + "; ".join(role_summaries[:2]) + "."
+    evidence = "Recent examples include " + "; ".join(role_summaries[:2])
     return " ".join(part for part in (opener, _ensure_sentence(source_about), evidence) if part).strip()
 
 

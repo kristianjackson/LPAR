@@ -22,6 +22,7 @@ python3 -m venv .venv
 .venv/bin/python -m lps.cli ingest --format markdown --input tests/fixtures/sample_profile.md --profile-name sample
 .venv/bin/python -m lps.cli analyze .lps/profiles/sample.json --lens ai
 .venv/bin/python -m lps.cli rewrite .lps/profiles/sample.json --lens ai
+.venv/bin/python -m lps.cli versions save .lps/rewrites/sample-ai.json --variant-id ai-core
 .venv/bin/python -m lps.cli validate .lps/profiles/sample.json
 ```
 
@@ -35,6 +36,9 @@ Supported lenses:
 
 ## Rewrite
 The `rewrite` command creates two conservative variants for the selected lens and writes a saved artifact to `.lps/rewrites/`. Each artifact includes a factuality checklist so the final wording still goes through human review.
+
+## Versioning
+Use `versions save` to snapshot a rewrite variant into `.lps/versions/`, `versions list` to inspect saved snapshots, and `diff` to compare any two saved version IDs.
 
 ## Ingestion formats
 

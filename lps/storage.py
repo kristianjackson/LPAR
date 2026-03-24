@@ -13,6 +13,7 @@ DEFAULT_WORKSPACE = Path(".lps")
 PROFILE_DIR = "profiles"
 ANALYSIS_DIR = "analysis"
 REWRITE_DIR = "rewrites"
+VERSION_DIR = "versions"
 
 
 def init_workspace(base_dir: Path = DEFAULT_WORKSPACE) -> Path:
@@ -20,6 +21,7 @@ def init_workspace(base_dir: Path = DEFAULT_WORKSPACE) -> Path:
     (base_dir / PROFILE_DIR).mkdir(parents=True, exist_ok=True)
     (base_dir / ANALYSIS_DIR).mkdir(parents=True, exist_ok=True)
     (base_dir / REWRITE_DIR).mkdir(parents=True, exist_ok=True)
+    (base_dir / VERSION_DIR).mkdir(parents=True, exist_ok=True)
     return base_dir
 
 
@@ -52,6 +54,18 @@ def write_rewrite_artifact(
     init_workspace(base_dir)
     target = base_dir / REWRITE_DIR / f"{artifact_name}.json"
     target.write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def write_version_record(
+    version_id: str,
+    record: dict[str, Any],
+    base_dir: Path = DEFAULT_WORKSPACE,
+) -> Path:
+    """Write a saved version record JSON document to the workspace."""
+    init_workspace(base_dir)
+    target = base_dir / VERSION_DIR / f"{version_id}.json"
+    target.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
     return target
 
 

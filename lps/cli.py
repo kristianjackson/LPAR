@@ -17,8 +17,10 @@ from .storage import (
     read_profile,
     write_analysis_report,
     write_rewrite_artifact,
+    write_version_record,
     write_profile,
 )
+from .versioning import create_version_record, list_version_records, read_version_record, render_version_diff
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -122,6 +124,61 @@ def cmd_rewrite(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_versions_save(args: argparse.Namespace) -> int:
+    rewrite_path = Path(args.path)
+
+    try:
+        rewrite_artifact = json.loads(rewrite_path.read_text(encoding="utf-8"))
+        record = create_version_record(rewrite_artifact, args.variant_id, str(rewrite_path))
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"Version save failed: {exc}")
+        return 1
+
+    workspace = init_workspace(Path(args.workspace))
+    target = write_version_record(record["version_id"], record, base_dir=workspace)
+    print(f"Saved version: {record['version_id']}")
+    print(f"Version record saved to: {target}")
+    return 0
+
+
+def cmd_versions_list(args: argparse.Namespace) -> int:
+    records = list_version_records(Path(args.workspace))
+    if not records:
+        print("No saved versions found.")
+        return 0
+
+    for record in records:
+        print(
+            f"{record['version_id']} | {record['lens']} | {record['variant_id']} | {record['saved_at']}"
+        )
+    return 0
+
+
+def cmd_versions_show(args: argparse.Namespace) -> int:
+    try:
+        record = read_version_record(Path(args.workspace), args.version_id)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Version show failed: {exc}")
+        return 1
+
+    print(json.dumps(record, indent=2))
+    return 0
+
+
+def cmd_diff(args: argparse.Namespace) -> int:
+    workspace = Path(args.workspace)
+
+    try:
+        version_a = read_version_record(workspace, args.version_a)
+        version_b = read_version_record(workspace, args.version_b)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Diff failed: {exc}")
+        return 1
+
+    print(render_version_diff(version_a, version_b))
+    return 0
+
+
 def _read_ingest_source(input_path: str | None) -> str:
     if input_path:
         return Path(input_path).read_text(encoding="utf-8")
@@ -169,6 +226,30 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rewrite_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
     rewrite_cmd.set_defaults(func=cmd_rewrite)
+
+    versions_cmd = subparsers.add_parser("versions", help="Manage saved profile versions")
+    versions_subparsers = versions_cmd.add_subparsers(dest="versions_command", required=True)
+
+    versions_save_cmd = versions_subparsers.add_parser("save", help="Save a rewrite variant as a version")
+    versions_save_cmd.add_argument("path", help="Path to rewrite artifact JSON file")
+    versions_save_cmd.add_argument("--variant-id", required=True, help="Variant identifier to save")
+    versions_save_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    versions_save_cmd.set_defaults(func=cmd_versions_save)
+
+    versions_list_cmd = versions_subparsers.add_parser("list", help="List saved versions")
+    versions_list_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    versions_list_cmd.set_defaults(func=cmd_versions_list)
+
+    versions_show_cmd = versions_subparsers.add_parser("show", help="Show a saved version record")
+    versions_show_cmd.add_argument("version_id", help="Saved version identifier")
+    versions_show_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    versions_show_cmd.set_defaults(func=cmd_versions_show)
+
+    diff_cmd = subparsers.add_parser("diff", help="Diff two saved versions")
+    diff_cmd.add_argument("version_a", help="First saved version identifier")
+    diff_cmd.add_argument("version_b", help="Second saved version identifier")
+    diff_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    diff_cmd.set_defaults(func=cmd_diff)
 
     ingest_cmd = subparsers.add_parser("ingest", help="Ingest profile content into schema v1")
     ingest_cmd.add_argument(
