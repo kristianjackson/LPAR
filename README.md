@@ -3,12 +3,16 @@
 Local-first tooling for profile ingestion, analysis, rewriting, versioning, and narrative-aligned content generation.
 
 ## Current status
-Phase 0 is complete and Phase 1 ingestion is now available:
-- Local workspace initialization
-- Canonical profile schema shape
-- Profile validation command
-- Markdown ingestion command
-- Manual paste ingestion command
+The MVP baseline is implemented locally through the CLI:
+- Workspace initialization and schema validation
+- Markdown and paste ingestion
+- Heuristic analysis by positioning lens
+- Deterministic rewrite variants with factuality checklist
+- Version snapshots and diffs
+- Version-based content generation
+
+## Architecture
+System and artifact flow are documented in [docs/LPS-architecture-overview.md](docs/LPS-architecture-overview.md).
 
 ## Development setup
 ```bash
