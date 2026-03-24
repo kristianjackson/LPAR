@@ -3,13 +3,72 @@
 Local-first tooling for profile ingestion, analysis, rewriting, versioning, and narrative-aligned content generation.
 
 ## Current status
-Initial scaffold complete for Phase 0:
+Phase 0 is complete and Phase 1 ingestion is now available:
 - Local workspace initialization
 - Canonical profile schema shape
 - Profile validation command
+- Markdown ingestion command
+- Manual paste ingestion command
+
+## Development setup
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e ".[dev]"
+```
 
 ## Quickstart
 ```bash
-python -m lps.cli init
-python -m lps.cli validate .lps/profiles/default.json
+.venv/bin/python -m lps.cli init
+.venv/bin/python -m lps.cli ingest --format markdown --input tests/fixtures/sample_profile.md --profile-name sample
+.venv/bin/python -m lps.cli analyze .lps/profiles/sample.json --lens ai
+.venv/bin/python -m lps.cli rewrite .lps/profiles/sample.json --lens ai
+.venv/bin/python -m lps.cli versions save .lps/rewrites/sample-ai.json --variant-id ai-core
+.venv/bin/python -m lps.cli content <version-id>
+.venv/bin/python -m lps.cli validate .lps/profiles/sample.json
+```
+
+## Analysis
+The `analyze` command reads a profile JSON file, scores it against one positioning lens, and writes a saved report to `.lps/analysis/`.
+
+Supported lenses:
+- `ai`
+- `transformation`
+- `consulting`
+
+## Rewrite
+The `rewrite` command creates two conservative variants for the selected lens and writes a saved artifact to `.lps/rewrites/`. Each artifact includes a factuality checklist so the final wording still goes through human review.
+
+## Versioning
+Use `versions save` to snapshot a rewrite variant into `.lps/versions/`, `versions list` to inspect saved snapshots, and `diff` to compare any two saved version IDs.
+
+## Content
+The `content` command reads a saved version and writes a bundle under `.lps/content/` with 10 ideas, 3 short post drafts, and 3 outreach drafts.
+
+## Ingestion formats
+
+### Markdown
+Use top-level `#` headings for the core sections and `## Title | Company` entries inside `# Experience`.
+
+```md
+# Headline
+AI Transformation Leader
+
+# About
+I build AI products and lead operating change.
+
+# Experience
+## Director, AI | ExampleCorp
+Led AI strategy and execution across product and delivery teams.
+```
+
+### Manual paste
+Use labeled sections with one experience entry per line.
+
+```text
+Headline: AI Transformation Leader
+About:
+I build AI products and lead operating change.
+
+Experience:
+- Director, AI | ExampleCorp | Led AI strategy and execution across product and delivery teams.
 ```

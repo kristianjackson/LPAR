@@ -11,11 +11,19 @@ from .schema import empty_profile
 
 DEFAULT_WORKSPACE = Path(".lps")
 PROFILE_DIR = "profiles"
+ANALYSIS_DIR = "analysis"
+REWRITE_DIR = "rewrites"
+VERSION_DIR = "versions"
+CONTENT_DIR = "content"
 
 
 def init_workspace(base_dir: Path = DEFAULT_WORKSPACE) -> Path:
     """Initialize the local LPS workspace structure."""
     (base_dir / PROFILE_DIR).mkdir(parents=True, exist_ok=True)
+    (base_dir / ANALYSIS_DIR).mkdir(parents=True, exist_ok=True)
+    (base_dir / REWRITE_DIR).mkdir(parents=True, exist_ok=True)
+    (base_dir / VERSION_DIR).mkdir(parents=True, exist_ok=True)
+    (base_dir / CONTENT_DIR).mkdir(parents=True, exist_ok=True)
     return base_dir
 
 
@@ -24,6 +32,54 @@ def write_profile(profile_name: str, profile: dict[str, Any], base_dir: Path = D
     init_workspace(base_dir)
     target = base_dir / PROFILE_DIR / f"{profile_name}.json"
     target.write_text(json.dumps(profile, indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def write_analysis_report(
+    report_name: str,
+    report: dict[str, Any],
+    base_dir: Path = DEFAULT_WORKSPACE,
+) -> Path:
+    """Write an analysis report JSON document to the workspace."""
+    init_workspace(base_dir)
+    target = base_dir / ANALYSIS_DIR / f"{report_name}.json"
+    target.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def write_rewrite_artifact(
+    artifact_name: str,
+    artifact: dict[str, Any],
+    base_dir: Path = DEFAULT_WORKSPACE,
+) -> Path:
+    """Write a rewrite artifact JSON document to the workspace."""
+    init_workspace(base_dir)
+    target = base_dir / REWRITE_DIR / f"{artifact_name}.json"
+    target.write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def write_version_record(
+    version_id: str,
+    record: dict[str, Any],
+    base_dir: Path = DEFAULT_WORKSPACE,
+) -> Path:
+    """Write a saved version record JSON document to the workspace."""
+    init_workspace(base_dir)
+    target = base_dir / VERSION_DIR / f"{version_id}.json"
+    target.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def write_content_artifact(
+    artifact_name: str,
+    artifact: dict[str, Any],
+    base_dir: Path = DEFAULT_WORKSPACE,
+) -> Path:
+    """Write a content artifact JSON document to the workspace."""
+    init_workspace(base_dir)
+    target = base_dir / CONTENT_DIR / f"{artifact_name}.json"
+    target.write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
     return target
 
 

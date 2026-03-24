@@ -1,19 +1,38 @@
-# LPS Execution Plan (Post-PRD)
+# LPS Execution Plan
 
 ## Purpose
-This plan translates the PRD into an execution sequence and defines how repo operations (branching, commits, PRs, merges, release tags) will be managed going forward.
+Translate the PRD into a current, dependency-based delivery sequence for a solo builder, while keeping the repo easy to hand off later.
 
-## Working Agreement: Repo Operations
-I will manage repository operations with the following default flow for each unit of work:
+## Current Baseline (2026-03-24)
+- Phase 0 is complete.
+- Implemented code:
+  - schema definition and validation helpers
+  - local filesystem storage helpers
+  - CLI commands: `init`, `ingest`, `analyze`, `rewrite`, `versions`, `diff`, `content`, `validate`
+  - schema, ingestion, analysis, rewrite, versioning, and content tests
+- Verified commands in the current shell:
+  - `python3 --version` works
+  - `python3 -m lps.cli --help` works
+  - `python3 -m lps.cli ingest --format markdown --input tests/fixtures/sample_profile.md` works after dev setup
+  - `python3 -m lps.cli rewrite /tmp/lps-ingest-check/profiles/markdown-check.json --lens ai --workspace /tmp/lps-rewrite-check` works
+  - `python3 -m lps.cli versions save /tmp/lps-rewrite-check/rewrites/markdown-check-ai.json --variant-id ai-core --workspace /tmp/lps-version-check` works
+  - `python3 -m lps.cli content 20260324T195305308397Z-ai-ai-core --workspace /tmp/lps-version-check` works
+  - `/tmp/lps-venv/bin/python -m pytest -q` passes
+- Dev setup baseline:
+  - `pyproject.toml` declares `pytest` in the `dev` extra
+  - the recommended path is `python3 -m venv .venv` then `.venv/bin/python -m pip install -e ".[dev]"`
 
-1. Create a scoped branch from `main` using `feat/<area>-<short-name>` or `chore/<short-name>`.
-2. Implement a small, reviewable slice.
-3. Run relevant checks/tests.
-4. Commit with clear messages.
-5. Open a PR with summary, risks, and test evidence.
-6. Address review comments.
-7. Merge with **squash merge** by default (unless you request otherwise).
-8. Tag releases at milestone boundaries.
+## Solo Delivery Workflow
+Default operating model:
+1. Work in small, reviewable slices.
+2. Use a short-lived branch when the slice is non-trivial, risky, or spans multiple files.
+3. Run the most relevant checks before committing.
+4. Commit with clear, scoped messages.
+5. Update docs whenever commands, paths, or workflow expectations change.
+
+Optional collaboration workflow:
+- Open a PR when handing work to another reviewer, changing architecture, or taking on a higher-risk refactor.
+- Include scope, verification notes, and any rollback considerations.
 
 ### Commit Message Convention
 - `feat: <what changed>`
@@ -23,123 +42,199 @@ I will manage repository operations with the following default flow for each uni
 - `refactor: <what changed>`
 - `test: <what changed>`
 
-### PR Quality Bar
-A PR should include:
-- Scope + rationale.
-- Test commands and outputs.
-- Risk notes and rollback notes if applicable.
-- Updated docs when behavior changes.
+## Phase 0 - Complete
+Goal achieved: establish a stable local data model and a working CLI skeleton.
 
-## Implementation Sequence (from PRD)
+Delivered:
+- project package layout
+- schema v1
+- local storage conventions for profile JSON
+- workspace initialization
+- validation command
+- baseline tests
 
-## Phase 0 — Foundation (Week 1)
-**Goal:** establish project skeleton and stable local data model.
+Exit criteria met:
+- the repo can create a starter workspace
+- the repo can validate a schema v1 profile
+- the implementation is local-only and human-readable
 
-### Deliverables
-- Project structure for `ingestion`, `analysis`, `rewrite`, `versioning`, `content` modules.
-- Core profile schema:
-  - `headline`
-  - `about`
-  - `experience[]`
-- Local storage conventions (JSON + Markdown artifacts).
-- Basic CLI entrypoint for running workflows locally.
+## Active Delivery Sequence
 
-### Exit Criteria
-- Can load/save a valid profile object locally.
-- Can run `init` + `validate` commands successfully.
+### Phase 1 - Ingestion and Parsing
+Dependencies:
+- Phase 0 complete
 
-## Phase 1 — Ingestion + Parsing (Week 1–2)
-**Goal:** ingest manual/markdown profile input into structured schema.
+Deliverables:
+- parser module boundary for source adapters
+- Markdown ingestion path
+- manual paste ingestion path
+- normalization layer that outputs schema v1 JSON
+- structured error reporting for malformed input
 
-### Deliverables
-- Markdown parser for profile sections.
-- Manual paste ingestion command.
-- Validation and normalization pipeline.
-- Error reporting for malformed input.
+Verification gates:
+- ingest from Markdown into `.lps/profiles/`
+- ingest from pasted content into `.lps/profiles/`
+- invalid inputs return actionable validation or parsing errors
 
-### Exit Criteria
-- Ingestion from paste and markdown works end-to-end in <3 minutes.
-- Structured output persisted to local store.
+Exit criteria:
+- user can ingest profile source material in under 3 minutes
+- output is a valid profile JSON document stored locally
 
-## Phase 2 — Analysis Engine (Week 2)
-**Goal:** produce actionable quality and positioning diagnostics.
+Current status:
+- implemented with the `ingest` CLI command
+- covered by parser and CLI tests
+- the next work begins at Phase 2 analysis
 
-### Deliverables
-- Scoring rubric (clarity, authority, AI signal, leadership signal).
-- Gap analysis against selected target role.
-- Prioritized weaknesses + improvements output format.
+Risks to manage:
+- ambiguous Markdown section boundaries
+- input formats drifting away from the schema
+- error messages that are technically correct but not actionable
 
-### Exit Criteria
-- Report contains scores + at least 3 prioritized weaknesses and 3 improvements.
+### Phase 2 - Analysis Engine
+Dependencies:
+- Phase 1 complete
 
-## Phase 3 — Rewrite Engine (Week 3)
-**Goal:** generate stronger profile variants aligned to role lenses.
+Deliverables:
+- heuristic scoring rubric
+- per-lens gap analysis
+- prioritized weaknesses and improvements
+- analysis artifact format stored under `.lps/analysis/`
 
-### Deliverables
-- Rewrite templates for headline/about/experience.
-- Variant generation modes:
-  - AI-focused
-  - Consulting-focused
-  - Transformation-focused
-- Factuality guardrails/checklist before save.
+Verification gates:
+- report includes numeric scores with explanations
+- report distinguishes between general quality issues and lens-specific positioning gaps
+- report can be generated from any valid profile JSON
 
-### Exit Criteria
-- At least 2 high-quality variants generated per run.
-- Variants pass factuality checklist.
+Exit criteria:
+- each run returns at least 3 prioritized weaknesses and 3 improvements
+- analysis output is saved locally and remains human-readable
 
-## Phase 4 — Versioning + Diff (Week 4)
-**Goal:** make experimentation first-class.
+Current status:
+- implemented with the `analyze` CLI command
+- covered by analysis tests and CLI verification
+- the next work begins at Phase 3 rewrite
 
-### Deliverables
-- Version store with metadata (timestamp, role lens, prompt hash).
-- Version listing and retrieval.
-- Diff command for any two versions.
+Risks to manage:
+- scoring rules that are too vague to trust
+- generic recommendations that do not improve positioning
+- analysis output that cannot be traced back to source profile content
 
-### Exit Criteria
-- User can open and diff any two saved versions reliably.
+### Phase 3 - Rewrite Engine
+Dependencies:
+- Phase 2 complete
 
-## Phase 5 — Content Generator (Week 4–5)
-**Goal:** leverage selected profile narrative for content output.
+Deliverables:
+- rewrite workflow for headline, about, and experience
+- lens-aware prompts or templates for:
+  - AI leadership
+  - transformation leadership
+  - consulting leadership
+- factuality review checklist
+- rewrite artifacts stored under `.lps/rewrites/`
 
-### Deliverables
-- Idea generator (10+ ideas).
-- Short-form post drafts.
-- Outreach templates/messages.
-- Style controls (tone, length, CTA strength).
+Verification gates:
+- generated variants cover all three core sections
+- at least 2 strong variants are generated in one run
+- review output explicitly flags claims that need confirmation
 
-### Exit Criteria
-- At least 10 ideas, 3 post drafts, 3 outreach drafts per run.
+Exit criteria:
+- the user can compare multiple credible variants without losing source fidelity
+- the rewrite flow is usable across all three MVP positioning lenses
 
-## Backlog for Post-MVP
-- Optional lightweight web UI.
-- Feedback loop to tune scoring.
-- Export bundles for easy profile publishing workflows.
-- Analytics on variant performance over time.
+Current status:
+- implemented with the `rewrite` CLI command
+- covered by rewrite tests and CLI verification
+- the next work begins at Phase 4 versioning and diff
 
-## Immediate Next 10 Tickets
-1. Define canonical profile JSON schema.
-2. Create parser interface and test fixtures.
-3. Implement markdown ingestion adapter.
-4. Implement manual paste ingestion adapter.
-5. Add schema validation command.
-6. Define analysis score rubric constants.
-7. Implement baseline analysis report formatter.
-8. Add rewrite prompt templates per role lens.
-9. Add version store abstraction.
-10. Add diff renderer for profile versions.
+Risks to manage:
+- embellished claims or unsupported metrics
+- different lenses collapsing into the same generic language
+- output quality depending too heavily on undocumented prompt behavior
 
-## Risks to Manage Weekly
-- Hallucinated claims in rewrites.
-- Drift between profile narrative and generated content.
-- Overly generic language reducing differentiation.
+### Phase 4 - Versioning and Diff
+Dependencies:
+- Phase 3 complete
 
-## Decision Log Template
-Use this for consequential product/engineering decisions:
-- Date:
-- Context:
-- Decision:
-- Alternatives considered:
-- Consequences:
+Deliverables:
+- version metadata format
+- save, list, and retrieve flows
+- diff command for any two saved versions
+- version artifacts stored under `.lps/versions/`
 
-## Done Definition for This Plan
-This execution plan is considered active once Phase 0 ticketing starts and each phase is tracked by PRs tied to the exit criteria above.
+Verification gates:
+- versions can be retrieved by stable identifiers
+- metadata captures enough context to understand version origin
+- diff output is readable enough for profile review decisions
+
+Exit criteria:
+- user can reliably save and compare any two variants
+- version records are inspectable without bespoke tooling
+
+Current status:
+- implemented with the `versions` and `diff` CLI commands
+- covered by versioning tests and CLI verification
+- the next work begins at Phase 5 content generation
+
+Risks to manage:
+- metadata shape becoming inconsistent across commands
+- diffs that are technically accurate but not useful for narrative review
+- version identifiers that are hard to reference from the CLI
+
+### Phase 5 - Content Generation
+Dependencies:
+- Phase 4 complete
+
+Deliverables:
+- post idea generator
+- short-form post draft generator
+- outreach draft generator
+- content artifacts stored under `.lps/content/`
+
+Verification gates:
+- content is generated from a selected saved version rather than detached prompts
+- outputs preserve the chosen positioning lens
+- output bundles are saved as Markdown or plain text
+
+Exit criteria:
+- a run produces at least 10 post ideas, 3 post drafts, and 3 outreach drafts
+- generated content stays aligned with the chosen profile narrative
+
+Current status:
+- implemented with the `content` CLI command
+- covered by content tests and CLI verification
+- the MVP pipeline is now complete
+
+Risks to manage:
+- narrative drift between profile and generated content
+- repetitive outputs across formats
+- content generation happening before version selection is stable
+
+## Cross-Cutting Rules
+- Keep the canonical schema stable until MVP pressure requires change.
+- Prefer explicit local artifacts over hidden state.
+- Do not imply or build LinkedIn automation.
+- Preserve a clear line between implemented commands and planned commands in docs and CLI help.
+- Treat factual accuracy as a release gate for rewrite-related work.
+
+## Immediate Next Tickets
+1. Add a short architecture note covering the full profile -> analysis -> rewrite -> version -> content flow.
+2. Decide whether content artifacts should be Markdown, plain text, JSON, or a hybrid bundle.
+3. Evaluate whether deterministic generation is sufficient for rewrite and content quality or whether a model-backed path is justified later.
+4. Tighten rewrite and content quality with more differentiated lens-specific language.
+5. Add smoke tests for the full end-to-end pipeline in one workspace.
+6. Define release criteria for a v0.1 tag now that the MVP path is implemented.
+7. Decide whether to add a lightweight local review UI.
+8. Add export helpers for publishing profile variants and content drafts.
+9. Add performance tracking across saved versions and generated content.
+10. Harden backward compatibility rules for saved artifacts before wider iteration.
+
+## MVP Completion Status
+The MVP definition is now satisfied in the local CLI workflow.
+
+## MVP Completion Definition
+The MVP is complete when one user can:
+1. ingest a profile into schema v1
+2. analyze it with actionable heuristic feedback
+3. generate multiple role-aligned rewrites
+4. save and diff versions
+5. generate narrative-aligned posts and outreach from a selected version

@@ -1,157 +1,210 @@
 # Product Requirements Document (PRD)
 
-## Product Name
-**LinkedIn Positioning System (LPS)**  
-_Working name; can be changed later._
+## Product
+**LinkedIn Positioning System (LPS)**
+
+## Purpose
+Define the current product reality, the target MVP, and the defaults that guide implementation from the current Phase 0 scaffold to a usable local-first workflow.
+
+## Current State (Implemented as of 2026-03-24)
+- The repo is a local Python CLI project with the `lps` package and ten working commands:
+  - `python3 -m lps.cli init`
+  - `python3 -m lps.cli ingest --format <markdown|paste> --input <path>`
+  - `python3 -m lps.cli analyze <path> --lens <ai|transformation|consulting>`
+  - `python3 -m lps.cli rewrite <path> --lens <ai|transformation|consulting>`
+  - `python3 -m lps.cli versions save <rewrite-path> --variant-id <id>`
+  - `python3 -m lps.cli versions list`
+  - `python3 -m lps.cli versions show <version-id>`
+  - `python3 -m lps.cli diff <version-a> <version-b>`
+  - `python3 -m lps.cli content <version-id>`
+  - `python3 -m lps.cli validate <path>`
+- Phase 0 is complete:
+  - local workspace initialization exists
+  - canonical profile schema v1 exists
+  - profile read/write helpers exist
+  - schema validation tests exist in `tests/test_schema.py`
+- Phase 1 ingestion is implemented for:
+  - Markdown source files using a documented heading contract
+  - manual paste input using labeled sections
+- Phase 2 analysis is implemented for:
+  - heuristic scoring across clarity, authority, AI signal, leadership signal, and lens fit
+  - selected-lens gap analysis for AI, transformation, and consulting positioning
+  - saved JSON analysis artifacts under `.lps/analysis/`
+- Phase 3 rewrite is implemented for:
+  - two deterministic variants per selected lens
+  - conservative rewrites for headline, about, and experience entries
+  - factuality checklist output and saved JSON artifacts under `.lps/rewrites/`
+- Phase 4 versioning is implemented for:
+  - saved version snapshots from rewrite artifacts
+  - version listing and inspection
+  - diff output between any two saved versions
+- Phase 5 content generation is implemented for:
+  - idea generation from a selected saved version
+  - 3 short-form post drafts and 3 outreach drafts per run
+  - saved JSON content artifacts under `.lps/content/`
+- The current workspace baseline is `.lps/profiles/`, `.lps/analysis/`, `.lps/rewrites/`, `.lps/versions/`, and `.lps/content/`.
+- The current product is CLI-only. There is no web UI, remote service, or LinkedIn integration.
+- The end-to-end MVP flow is implemented locally through the CLI.
 
 ## Problem Statement
-Current LinkedIn presence under-represents true seniority and impact, and lacks a repeatable process for iteration or experimentation.
-
-### Current pain points
-- Profile under-signals actual level and scope.
-- Profile is static; there is no deliberate experimentation loop.
-- Messaging is not clearly aligned to target roles (AI leadership, transformation leadership, consulting leadership).
-
-### Platform constraints
-- LinkedIn is not automation-friendly.
-- Building directly against LinkedIn APIs or unstable UI flows introduces fragility.
-
-## Solution Overview
-A **local-first, AI-powered positioning system** that:
-1. Ingests profile content.
-2. Analyzes strengths, weaknesses, and role-fit.
-3. Rewrites profile sections for stronger impact.
-4. Tracks versions and diffs over time.
-5. Generates content (posts + outreach) aligned to the same narrative.
-
-> The system must provide core value without any dependency on LinkedIn APIs.
-
-## Core Objectives
-1. **Clarity**  
-   Profile communicates seniority, scope, and value within 10 seconds.
-2. **Positioning**  
-   Align narrative to target archetypes (e.g., AI leader, transformation leader, consultant).
-3. **Iteration**  
-   Enable rapid versioning and experimentation across profile variants.
-4. **Leverage**  
-   Reuse positioning foundation to generate posts and outreach with consistent voice.
-
-## Non-Goals
-- Full LinkedIn automation bot.
-- DM automation workflows.
-- Scraping other profiles at scale.
-- Growth-hacking/spam behavior.
+The current LinkedIn profile under-represents actual seniority, scope, and differentiated value. The user needs a repeatable system for evaluating, rewriting, versioning, and extending that profile narrative into posts and outreach without depending on brittle LinkedIn automation.
 
 ## Users
-- **Primary user:** current owner/operator (single user, local use).
-- **Secondary user:** future productized users with similar career-positioning needs.
-
-## MVP Scope
-
-### 1) Profile Ingestion
-**Inputs**
-- Manual paste.
-- Markdown import.
-
-**Parsed structure**
-- Headline.
-- About section.
-- Experience entries.
-
-**MVP acceptance criteria**
-- User can ingest source profile in <3 minutes.
-- Parser outputs valid structured profile object for all three core sections.
-
-### 2) Analysis Engine
-**Outputs**
-- Numeric scores (e.g., clarity, authority, AI signal, leadership signal).
-- Key weaknesses.
-- Positioning gaps relative to selected target role.
-
-**MVP acceptance criteria**
-- User receives actionable analysis report in one run.
-- At least 3 prioritized weaknesses and 3 suggested improvements are produced.
-
-### 3) Rewrite Engine
-**Outputs**
-- Improved headline.
-- Improved About section.
-- Rewritten experience entries.
-- Multiple variants by positioning lens (AI-focused, consulting-focused, transformation-focused).
-
-**MVP acceptance criteria**
-- Generate at least 2 high-quality variants per run.
-- Variants preserve factual accuracy while improving positioning strength.
-
-### 4) Versioning
-**Capabilities**
-- Save multiple profile versions.
-- Compare diffs between versions.
-- Track metadata (timestamp, target role, model prompt/profile context).
-
-**MVP acceptance criteria**
-- User can list, open, and diff any two versions.
-- Rewrites are reproducible from saved metadata.
-
-### 5) Content Generator
-**Outputs**
-- Post ideas.
-- Short-form post drafts.
-- Outreach messages.
-
-**MVP acceptance criteria**
-- Generate at least 10 post ideas tied to selected profile variant.
-- Generate at least 3 usable post drafts and 3 outreach drafts per run.
-
-## Success Criteria
-- Rewritten profile is actually deployed/used.
-- User can generate 2–3 high-quality profile variants quickly.
-- User can produce posts consistently without high cognitive load.
+- Primary user: the current repo owner, working locally and iterating quickly.
+- Secondary user: a future solo operator or engineer who may pick up the repo and continue delivery with minimal onboarding.
 
 ## Product Principles
-1. **Local-first by default**: user data remains local unless explicitly exported.
-2. **Narrative consistency**: profile and content outputs share a coherent positioning spine.
-3. **Human-in-the-loop**: AI proposes; user approves final wording.
-4. **No brittle automation dependency**: utility should remain independent of LinkedIn API availability.
+1. Local-first by default.
+2. Human-readable artifacts over opaque state.
+3. Human approval before narrative changes are adopted.
+4. No dependency on LinkedIn APIs or browser automation.
+5. One positioning spine reused across profile, posts, and outreach.
+
+## Non-Goals
+- LinkedIn automation or bot behavior.
+- Bulk scraping or growth-hacking workflows.
+- Multi-user collaboration features in MVP.
+- Hosted inference or SaaS architecture decisions in MVP.
+
+## Target MVP
+The MVP is a local Python CLI workflow that can:
+1. Ingest profile source material from paste or Markdown.
+2. Normalize that material into the canonical schema.
+3. Produce a heuristic analysis report for positioning quality and role fit.
+4. Generate rewritten profile variants for multiple positioning lenses.
+5. Save versions and diff any two saved variants.
+6. Generate narrative-aligned post ideas, post drafts, and outreach drafts from a selected version.
+
+## Locked MVP Defaults
+- Positioning lenses are first-class and equal in MVP:
+  - AI leadership
+  - transformation leadership
+  - consulting leadership
+- Scoring is heuristic in v1. Calibration loops and learned scoring are post-MVP.
+- All durable artifacts stay local and human-readable:
+  - JSON for structured data
+  - Markdown for rich reports or narrative artifacts
+  - plain text where formatting is unnecessary
+- The CLI is the only required interface for MVP.
+- Export expectations for v1 are limited to JSON, Markdown, and plain text bundles.
+
+## Canonical Data Model v1
+The profile schema remains unchanged for v1:
+
+```json
+{
+  "headline": "string",
+  "about": "string",
+  "experience": [
+    {
+      "title": "string",
+      "company": "string",
+      "description": "string"
+    }
+  ]
+}
+```
+
+This schema is intentionally narrow. It is sufficient for the first ingestion, validation, rewrite, and versioning loops. Additional fields can be added after the MVP proves the core workflow.
+
+## Interfaces
+
+### Implemented CLI Surface
+- `python3 -m lps.cli init [--workspace .lps] [--profile-name default]`
+  - initializes the local workspace
+  - creates a starter profile JSON file
+- `python3 -m lps.cli ingest --format <markdown|paste> [--input path] [--workspace .lps] [--profile-name default]`
+  - ingests a Markdown or labeled paste source into schema v1
+  - writes the resulting profile JSON to `.lps/profiles/`
+- `python3 -m lps.cli analyze <path> --lens <ai|transformation|consulting> [--workspace .lps]`
+  - analyzes a validated profile against one positioning lens
+  - writes the resulting report JSON to `.lps/analysis/`
+- `python3 -m lps.cli rewrite <path> --lens <ai|transformation|consulting> [--workspace .lps]`
+  - creates two conservative profile variants for one positioning lens
+  - writes the resulting artifact JSON to `.lps/rewrites/`
+- `python3 -m lps.cli versions save <rewrite-path> --variant-id <id> [--workspace .lps]`
+  - saves one rewrite variant as a named version snapshot
+  - writes the resulting version JSON to `.lps/versions/`
+- `python3 -m lps.cli versions list [--workspace .lps]`
+  - lists saved versions
+- `python3 -m lps.cli versions show <version-id> [--workspace .lps]`
+  - prints a saved version record
+- `python3 -m lps.cli diff <version-a> <version-b> [--workspace .lps]`
+  - renders a unified diff between two saved versions
+- `python3 -m lps.cli content <version-id> [--workspace .lps]`
+  - generates a content bundle from a selected saved version
+  - writes the resulting artifact JSON to `.lps/content/`
+- `python3 -m lps.cli validate <path>`
+  - reads a profile JSON document
+  - validates it against schema v1
+
+### Planned CLI Surface (Not Yet Implemented)
+- None for MVP. Future additions are expected to be post-MVP workflow or UX improvements rather than new core pipeline steps.
+
+### Workspace Layout
+- Current:
+  - `.lps/profiles/`
+  - `.lps/analysis/`
+  - `.lps/rewrites/`
+  - `.lps/versions/`
+  - `.lps/content/`
 
 ## Functional Requirements
-- FR1: System must ingest profile text from paste or markdown file.
-- FR2: System must parse and persist structured profile data.
-- FR3: System must produce an analysis report with scores + explanations.
-- FR4: System must generate role-specific rewrites for core profile sections.
-- FR5: System must maintain version history and provide diff view.
-- FR6: System must generate content artifacts from selected profile version.
+- FR1: The system must ingest profile source text from manual paste and Markdown files.
+- FR2: The system must normalize and persist parsed content into schema v1 JSON.
+- FR3: The system must produce a heuristic analysis report with scores, explanations, weaknesses, and improvements.
+- FR4: The system must generate rewritten headline, about, and experience variants for all three positioning lenses.
+- FR5: The system must store version metadata and support listing, retrieval, and diffing.
+- FR6: The system must generate content artifacts tied to a selected profile version.
 
-## Quality Requirements (Non-Functional)
-- NFR1: Local execution supported for core flows.
-- NFR2: End-to-end run (ingest → analyze → rewrite) should complete in under 60 seconds on typical local hardware.
-- NFR3: Version data must be durable and human-readable (e.g., JSON/Markdown).
-- NFR4: System should be modular to support future connectors and UI layers.
+## Quality Requirements
+- NFR1: Core flows must run locally on a standard Python 3 environment.
+- NFR2: The ingest -> analyze -> rewrite loop should complete in under 60 seconds on typical local hardware, excluding optional model latency experiments.
+- NFR3: Saved artifacts must remain inspectable and editable without proprietary tooling.
+- NFR4: Modules should stay separated enough to support future UI or connector layers without rewriting the core data model.
+- NFR5: Rewrite outputs must preserve factual accuracy and avoid unsupported claims.
 
-## Risks and Mitigations
-- **Risk:** Hallucinated or embellished claims in rewrites.  
-  **Mitigation:** Add factuality guardrails + “claim verification checklist” before finalizing.
-- **Risk:** Generic outputs lacking differentiation.  
-  **Mitigation:** Force inclusion of specific impact metrics and leadership evidence when available.
-- **Risk:** Overfitting to one target role.  
-  **Mitigation:** Maintain explicit multi-variant strategy and side-by-side comparison.
+## Acceptance Criteria
 
-## Open Questions
-1. Which target role taxonomy should be first-class in MVP (AI, transformation, consulting, or all three equally)?
-2. Should scoring be purely heuristic in MVP, or calibrated over time with user feedback?
-3. What export formats are required in v1 (Markdown, plain text, JSON bundles)?
+### Ingestion
+- User can ingest source material from paste or Markdown in under 3 minutes.
+- The output is a valid schema v1 JSON profile saved under the local workspace.
+- The current implementation supports documented Markdown and labeled paste contracts through the CLI.
 
-## Proposed Milestones
-- **Milestone 1:** Ingestion + parsing + schema.
-- **Milestone 2:** Analysis engine + scoring rubric.
-- **Milestone 3:** Rewrite engine + role variants.
-- **Milestone 4:** Version store + diff tooling.
-- **Milestone 5:** Content generator + templates.
+### Analysis
+- A single run produces:
+  - numeric heuristic scores
+  - at least 3 prioritized weaknesses
+  - at least 3 suggested improvements
+  - explicit gaps relative to a selected positioning lens
+  - a saved local analysis artifact under `.lps/analysis/`
 
-## Definition of Done (MVP)
-MVP is complete when one user can:
-1. Import existing profile.
-2. Receive clear analysis and prioritized gaps.
-3. Generate at least two strong, role-aligned rewrites.
-4. Save, compare, and select a version.
-5. Generate ready-to-edit posts and outreach from that version.
+### Rewrite
+- A single run produces at least 2 credible profile variants.
+- Rewrites cover headline, about, and experience entries.
+- Variants remain factually grounded and include a review checklist before adoption.
+- The current implementation writes a saved rewrite artifact under `.lps/rewrites/`.
+
+### Versioning
+- The user can save, list, open, and diff any two versions.
+- Saved metadata is sufficient to understand how a version was produced.
+- The current implementation saves version artifacts under `.lps/versions/`.
+
+### Content Generation
+- A single run produces at least:
+  - 10 post ideas
+  - 3 post drafts
+  - 3 outreach drafts
+- Outputs stay aligned with the selected profile version and positioning lens.
+- The current implementation writes a saved content artifact under `.lps/content/`.
+
+## Success Criteria
+- The user adopts a rewritten profile in actual LinkedIn usage.
+- The user can generate 2 or more strong profile variants with low friction.
+- The user can produce consistent posts and outreach from the same narrative spine without rebuilding context each time.
+
+## Post-MVP Considerations
+- Lightweight UI for local review workflows.
+- Feedback loops for improving heuristic scoring over time.
+- Broader export bundles or publishing helpers.
+- Performance tracking across versions and generated content.
