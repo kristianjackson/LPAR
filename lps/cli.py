@@ -3,12 +3,20 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
+from .analysis import analyze_profile
 from .ingestion import IngestionError, parse_profile_text
 from .schema import validate_profile
-from .storage import create_sample_profile, init_workspace, read_profile, write_profile
+from .storage import (
+    create_sample_profile,
+    init_workspace,
+    read_profile,
+    write_analysis_report,
+    write_profile,
+)
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -54,6 +62,35 @@ def cmd_ingest(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_analyze(args: argparse.Namespace) -> int:
+    profile_path = Path(args.path)
+
+    try:
+        profile = read_profile(profile_path)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Profile analysis failed: {exc}")
+        return 1
+
+    errors = validate_profile(profile)
+    if errors:
+        print("Profile analysis failed validation:")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+
+    report = analyze_profile(profile, args.lens, str(profile_path))
+    workspace = init_workspace(Path(args.workspace))
+    report_name = f"{profile_path.stem}-{args.lens}"
+    target = write_analysis_report(report_name, report, base_dir=workspace)
+
+    print(f"Analysis report saved to: {target}")
+    print(f"Lens: {report['lens_label']}")
+    print("Scores:")
+    for score_name, score_value in report["scores"].items():
+        print(f"- {score_name}: {score_value}")
+    return 0
+
+
 def _read_ingest_source(input_path: str | None) -> str:
     if input_path:
         return Path(input_path).read_text(encoding="utf-8")
@@ -79,6 +116,17 @@ def build_parser() -> argparse.ArgumentParser:
     validate_cmd = subparsers.add_parser("validate", help="Validate a profile JSON document")
     validate_cmd.add_argument("path", help="Path to profile JSON file")
     validate_cmd.set_defaults(func=cmd_validate)
+
+    analyze_cmd = subparsers.add_parser("analyze", help="Analyze a profile JSON document")
+    analyze_cmd.add_argument("path", help="Path to profile JSON file")
+    analyze_cmd.add_argument(
+        "--lens",
+        choices=("ai", "transformation", "consulting"),
+        required=True,
+        help="Positioning lens to analyze against",
+    )
+    analyze_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    analyze_cmd.set_defaults(func=cmd_analyze)
 
     ingest_cmd = subparsers.add_parser("ingest", help="Ingest profile content into schema v1")
     ingest_cmd.add_argument(

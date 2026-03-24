@@ -7,9 +7,10 @@
 Define the current product reality, the target MVP, and the defaults that guide implementation from the current Phase 0 scaffold to a usable local-first workflow.
 
 ## Current State (Implemented as of 2026-03-24)
-- The repo is a local Python CLI project with the `lps` package and three working commands:
+- The repo is a local Python CLI project with the `lps` package and four working commands:
   - `python3 -m lps.cli init`
   - `python3 -m lps.cli ingest --format <markdown|paste> --input <path>`
+  - `python3 -m lps.cli analyze <path> --lens <ai|transformation|consulting>`
   - `python3 -m lps.cli validate <path>`
 - Phase 0 is complete:
   - local workspace initialization exists
@@ -19,9 +20,13 @@ Define the current product reality, the target MVP, and the defaults that guide 
 - Phase 1 ingestion is implemented for:
   - Markdown source files using a documented heading contract
   - manual paste input using labeled sections
-- The current workspace baseline is `.lps/profiles/`.
+- Phase 2 analysis is implemented for:
+  - heuristic scoring across clarity, authority, AI signal, leadership signal, and lens fit
+  - selected-lens gap analysis for AI, transformation, and consulting positioning
+  - saved JSON analysis artifacts under `.lps/analysis/`
+- The current workspace baseline is `.lps/profiles/` and `.lps/analysis/`.
 - The current product is CLI-only. There is no web UI, remote service, or LinkedIn integration.
-- Analysis, rewrite, versioning, diff, and content generation are planned but not yet implemented.
+- Rewrite, versioning, diff, and content generation are planned but not yet implemented.
 
 ## Problem Statement
 The current LinkedIn profile under-represents actual seniority, scope, and differentiated value. The user needs a repeatable system for evaluating, rewriting, versioning, and extending that profile narrative into posts and outreach without depending on brittle LinkedIn automation.
@@ -93,13 +98,14 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
 - `python3 -m lps.cli ingest --format <markdown|paste> [--input path] [--workspace .lps] [--profile-name default]`
   - ingests a Markdown or labeled paste source into schema v1
   - writes the resulting profile JSON to `.lps/profiles/`
+- `python3 -m lps.cli analyze <path> --lens <ai|transformation|consulting> [--workspace .lps]`
+  - analyzes a validated profile against one positioning lens
+  - writes the resulting report JSON to `.lps/analysis/`
 - `python3 -m lps.cli validate <path>`
   - reads a profile JSON document
   - validates it against schema v1
 
 ### Planned CLI Surface (Not Yet Implemented)
-- `python3 -m lps.cli analyze`
-  - score the profile and emit a diagnostic report
 - `python3 -m lps.cli rewrite`
   - generate role-lens profile variants from a validated profile
 - `python3 -m lps.cli versions`
@@ -112,8 +118,8 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
 ### Workspace Layout
 - Current:
   - `.lps/profiles/`
-- Planned additions:
   - `.lps/analysis/`
+- Planned additions:
   - `.lps/rewrites/`
   - `.lps/versions/`
   - `.lps/content/`
@@ -146,6 +152,7 @@ This schema is intentionally narrow. It is sufficient for the first ingestion, v
   - at least 3 prioritized weaknesses
   - at least 3 suggested improvements
   - explicit gaps relative to a selected positioning lens
+  - a saved local analysis artifact under `.lps/analysis/`
 
 ### Rewrite
 - A single run produces at least 2 credible profile variants.

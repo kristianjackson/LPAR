@@ -11,11 +11,13 @@ from .schema import empty_profile
 
 DEFAULT_WORKSPACE = Path(".lps")
 PROFILE_DIR = "profiles"
+ANALYSIS_DIR = "analysis"
 
 
 def init_workspace(base_dir: Path = DEFAULT_WORKSPACE) -> Path:
     """Initialize the local LPS workspace structure."""
     (base_dir / PROFILE_DIR).mkdir(parents=True, exist_ok=True)
+    (base_dir / ANALYSIS_DIR).mkdir(parents=True, exist_ok=True)
     return base_dir
 
 
@@ -24,6 +26,18 @@ def write_profile(profile_name: str, profile: dict[str, Any], base_dir: Path = D
     init_workspace(base_dir)
     target = base_dir / PROFILE_DIR / f"{profile_name}.json"
     target.write_text(json.dumps(profile, indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def write_analysis_report(
+    report_name: str,
+    report: dict[str, Any],
+    base_dir: Path = DEFAULT_WORKSPACE,
+) -> Path:
+    """Write an analysis report JSON document to the workspace."""
+    init_workspace(base_dir)
+    target = base_dir / ANALYSIS_DIR / f"{report_name}.json"
+    target.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return target
 
 
