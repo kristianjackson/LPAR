@@ -6,8 +6,9 @@ import argparse
 import sys
 from pathlib import Path
 
+from .ingestion import IngestionError, parse_profile_text
 from .schema import validate_profile
-from .storage import create_sample_profile, init_workspace, read_profile
+from .storage import create_sample_profile, init_workspace, read_profile, write_profile
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -32,6 +33,40 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ingest(args: argparse.Namespace) -> int:
+    try:
+        source_text = _read_ingest_source(args.input)
+        profile = parse_profile_text(source_text, args.format)
+    except (IngestionError, OSError) as exc:
+        print(f"Profile ingestion failed: {exc}")
+        return 1
+
+    errors = validate_profile(profile)
+    if errors:
+        print("Profile ingestion failed validation:")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+
+    workspace = init_workspace(Path(args.workspace))
+    target = write_profile(args.profile_name, profile, base_dir=workspace)
+    print(f"Ingested profile saved to: {target}")
+    return 0
+
+
+def _read_ingest_source(input_path: str | None) -> str:
+    if input_path:
+        return Path(input_path).read_text(encoding="utf-8")
+
+    if getattr(sys.stdin, "isatty", lambda: False)():
+        raise IngestionError("No input provided. Pass --input or pipe content on stdin.")
+
+    source_text = sys.stdin.read()
+    if not source_text.strip():
+        raise IngestionError("No input provided. Pass --input or pipe content on stdin.")
+    return source_text
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lps", description="LinkedIn Positioning System CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -44,6 +79,21 @@ def build_parser() -> argparse.ArgumentParser:
     validate_cmd = subparsers.add_parser("validate", help="Validate a profile JSON document")
     validate_cmd.add_argument("path", help="Path to profile JSON file")
     validate_cmd.set_defaults(func=cmd_validate)
+
+    ingest_cmd = subparsers.add_parser("ingest", help="Ingest profile content into schema v1")
+    ingest_cmd.add_argument(
+        "--format",
+        choices=("markdown", "paste"),
+        required=True,
+        help="Ingestion format for the input content",
+    )
+    ingest_cmd.add_argument(
+        "--input",
+        help="Optional path to the input file; otherwise reads from stdin",
+    )
+    ingest_cmd.add_argument("--workspace", default=".lps", help="Workspace directory path")
+    ingest_cmd.add_argument("--profile-name", default="default", help="Output profile filename stem")
+    ingest_cmd.set_defaults(func=cmd_ingest)
 
     return parser
 

@@ -8,13 +8,15 @@ Translate the PRD into a current, dependency-based delivery sequence for a solo 
 - Implemented code:
   - schema definition and validation helpers
   - local filesystem storage helpers
-  - CLI commands: `init`, `validate`
-  - schema tests
+  - CLI commands: `init`, `ingest`, `validate`
+  - schema and ingestion tests
 - Verified commands in the current shell:
   - `python3 --version` works
   - `python3 -m lps.cli --help` works
-- Verification gap in the current shell:
-  - `python3 -m pytest -q` fails because `pytest` is not installed
+  - `python3 -m lps.cli ingest --format markdown --input tests/fixtures/sample_profile.md` works after dev setup
+- Dev setup baseline:
+  - `pyproject.toml` declares `pytest` in the `dev` extra
+  - the recommended path is `python3 -m venv .venv` then `.venv/bin/python -m pip install -e ".[dev]"`
 
 ## Solo Delivery Workflow
 Default operating model:
@@ -73,6 +75,11 @@ Verification gates:
 Exit criteria:
 - user can ingest profile source material in under 3 minutes
 - output is a valid profile JSON document stored locally
+
+Current status:
+- implemented with the `ingest` CLI command
+- covered by parser and CLI tests
+- the next work begins at Phase 2 analysis
 
 Risks to manage:
 - ambiguous Markdown section boundaries
@@ -186,16 +193,16 @@ Risks to manage:
 - Treat factual accuracy as a release gate for rewrite-related work.
 
 ## Immediate Next Tickets
-1. Add dev setup instructions and declare the pytest dependency needed to run the existing test suite.
-2. Define the ingestion module interface and fixture format for parser tests.
-3. Implement Markdown ingestion into schema v1.
-4. Implement manual paste ingestion into schema v1.
-5. Add CLI wiring for `ingest`.
-6. Add parser and validation tests for valid and malformed source inputs.
-7. Define the heuristic scoring rubric for all three positioning lenses.
-8. Implement a saved analysis report format under `.lps/analysis/`.
-9. Define rewrite artifact and metadata structure before generating variants.
-10. Implement a factuality checklist output for rewrite review.
+1. Define the heuristic scoring rubric for all three positioning lenses.
+2. Implement a saved analysis report format under `.lps/analysis/`.
+3. Add CLI wiring for `analyze`.
+4. Add analysis tests for strong, weak, and incomplete profiles.
+5. Define rewrite artifact and metadata structure before generating variants.
+6. Implement a factuality checklist output for rewrite review.
+7. Add CLI wiring for `rewrite`.
+8. Define version metadata identifiers before version storage begins.
+9. Implement version listing and diff output conventions.
+10. Document the analysis-to-rewrite handoff contract once it exists in code.
 
 ## MVP Completion Definition
 The MVP is complete when one user can:
